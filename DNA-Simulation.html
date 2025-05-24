@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.3</title>
+    <title>DNA 3D Simulation - V1.0.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -38,25 +38,25 @@
             transition: height 0.3s ease;
         }
         #header { top: 10px; left: 50%; transform: translateX(-50%); max-width: 80%; text-align: center; }
-        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 157.5px; width: 157.5px; } /* Reduced from 175px by 10% */
+        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 85.05px; width: 85.05px; } /* Reduced from 141.75px by 40% */
         #info { top: 100px; right: 10px; }
         #sequencePanel { top: 300px; right: 10px; }
         #focusPanel { top: 100px; left: 10px; text-align: left; }
-        #factsPanel { bottom: 60px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; }
-        #tourPanel { bottom: 60px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; display: none; }
+        #factsPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; } /* Moved lower */
+        #tourPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; display: none; } /* Moved lower */
         #baseInfo { top: 250px; left: 10px; text-align: left; }
         #controlsPanel { top: 350px; left: 10px; text-align: left; }
         #scalePanel { top: 450px; left: 10px; text-align: left; }
-        #header h1 { font-size: 24px; margin: 0 0 8px; }
-        #header p { font-size: 14px; margin: 3px 0; }
-        #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2 { font-size: 18px; margin: 0 0 6px; }
-        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 10px; margin: 3px 0; }
-        #factsPanel p, #tourPanel p { font-size: 14px; margin: 3px 0; }
-        #tourPanel label { font-size: 10px; }
+        #header h1 { font-size: 20px; margin: 0 0 8px; } /* Reduced from 24px */
+        #header p { font-size: 12px; margin: 3px 0; } /* Reduced from 14px */
+        #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2 { font-size: 14px; margin: 0 0 6px; } /* Reduced from 18px */
+        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 8px; margin: 3px 0; } /* Reduced from 10px */
+        #factsPanel p, #tourPanel p { font-size: 12px; margin: 3px 0; } /* Reduced from 14px */
+        #tourPanel label { font-size: 8px; } /* Reduced from 10px */
         #info ul { list-style: none; padding: 0; }
         #info li { display: flex; justify-content: flex-end; align-items: center; margin: 3px 0; }
-        .color-box { width: 10px; height: 10px; margin-left: 6px; display: inline-block; }
-        #sequenceList, #focusList { display: flex; flex-direction: column; align-items: flex-end; font-family: monospace; font-size: 12px; margin: 0; padding: 0; list-style: none; }
+        .color-box { width: 8px; height: 8px; margin-left: 4px; display: inline-block; } /* Adjusted for smaller text */
+        #sequenceList, #focusList { display: flex; flex-direction: column; align-items: flex-end; font-family: monospace; font-size: 10px; margin: 0; padding: 0; list-style: none; } /* Reduced from 12px */
         #focusList { align-items: flex-start; }
         #sequenceList li, #focusList li { margin: 2px 0; }
         .base-A { color: #ff3333; }
@@ -70,7 +70,7 @@
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 10px; /* Reduced from 12px */
             border-radius: 4px;
             margin: 5px 2px;
         }
@@ -81,12 +81,12 @@
             top: 5px;
             right: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px; /* Reduced from 14px */
             color: #fff;
         }
         .panel-content { display: block; }
         .panel-content.collapsed { display: none; }
-        .panel.collapsed { height: 30px; overflow: hidden; }
+        .panel.collapsed { height: 26px; overflow: hidden; } /* Adjusted for smaller title */
         #factProgress {
             width: 100%;
             height: 5px;
@@ -161,7 +161,7 @@
             <p id="tourText"></p>
             <div>
                 <label for="tourSpeed">Tour Speed:</label>
-                <input type="range" id="tourSpeed" min="0" max="0.05" step="0.005" value="0.01">
+                <input type="range" id="tourSpeed" min="0" max="0.05" step="0.005" value="0.005">
             </div>
         </div>
     </div>
@@ -286,7 +286,7 @@
         let dnaSequence = [];
         let isAutoTour = false;
         let tourProgress = 0;
-        let tourSpeed = 0.01; // Initial tour speed increased
+        let tourSpeed = 0.005;
         let currentPosition = new THREE.Vector3(0, 5, 15);
         let targetPosition = new THREE.Vector3();
         let currentTarget = new THREE.Vector3(0, 0, 0);
