@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.10</title>
+    <title>DNA 3D Simulation - V1.0.11</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -116,7 +116,7 @@
         <span class="toggle-icon" onclick="togglePanel('header')">▼</span>
         <h1>DNA 3D Simulation</h1>
         <div class="panel-content">
-            <p>Explore a dynamic 3D model of DNA. Use mouse to rotate, zoom, and pan, or click "Start Tour" for a guided view with multiple angles. Tap base pairs for details.</p>
+            <p>Explore a dynamic 3D model of DNA</p>
         </div>
     </div>
     <div id="info" class="panel">
@@ -169,7 +169,7 @@
             <p id="tourText"></p>
             <div>
                 <label for="tourSpeed">Tour Speed:</label>
-                <input type="range" id="tourSpeed" min="0" max="0.05" step="0.005" value="0.005">
+                <input type="range" id="tourSpeed" min="0" max="0.05" step="0.005" value="0.0025">
             </div>
         </div>
     </div>
@@ -298,7 +298,7 @@
         let dnaSequence = [];
         let isAutoTour = false;
         let tourProgress = 0;
-        let tourSpeed = 0.005;
+        let tourSpeed = 0.0025; // Reduced from 0.005 for slower tour
         let currentPosition = new THREE.Vector3(0, 5, 15);
         let targetPosition = new THREE.Vector3();
         let currentTarget = new THREE.Vector3(0, 0, 0);
