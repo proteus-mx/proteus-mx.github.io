@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.5</title>
+    <title>DNA 3D Simulation - V1.0.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -16,7 +16,7 @@
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         canvas { display: block; }
-        #unravelButton, #autoTourButton {
+        #unravelButton, #autoTourButton, #funModeToggle {
             position: absolute;
             bottom: 10px;
             padding: 8px;
@@ -29,34 +29,42 @@
         }
         #unravelButton { left: 10px; }
         #autoTourButton { right: 10px; }
+        #autoTourButton.throb {
+            animation: throb 1.5s ease-in-out infinite;
+        }
+        #funModeToggle { right: 100px; }
+        @keyframes throb {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
         #header, #info, #sequencePanel, #focusPanel, #factsPanel, #baseInfo, #controlsPanel, #tourPanel, #scalePanel {
             position: absolute;
             background: rgba(0, 0, 0, 0.7);
             color: #fff;
             padding: 8px;
             border-radius: 8px;
-            transition: height 0.3s ease;
+            transition: height 0.3s ease, top 0.3s ease, bottom 0.3s ease;
         }
         #header { top: 10px; left: 50%; transform: translateX(-50%); max-width: 80%; text-align: center; }
-        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 85.05px; width: 85.05px; } /* Reduced from 141.75px by 40% */
+        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 76.545px; width: 76.545px; }
         #info { top: 100px; right: 10px; }
         #sequencePanel { top: 300px; right: 10px; }
         #focusPanel { top: 100px; left: 10px; text-align: left; }
-        #factsPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; } /* Moved lower */
-        #tourPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; display: none; } /* Moved lower */
+        #factsPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; }
+        #tourPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; display: none; }
         #baseInfo { top: 250px; left: 10px; text-align: left; }
         #controlsPanel { top: 350px; left: 10px; text-align: left; }
         #scalePanel { top: 450px; left: 10px; text-align: left; }
-        #header h1 { font-size: 20px; margin: 0 0 8px; } /* Reduced from 24px */
-        #header p { font-size: 12px; margin: 3px 0; } /* Reduced from 14px */
-        #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2 { font-size: 14px; margin: 0 0 6px; } /* Reduced from 18px */
-        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 8px; margin: 3px 0; } /* Reduced from 10px */
-        #factsPanel p, #tourPanel p { font-size: 12px; margin: 3px 0; } /* Reduced from 14px */
-        #tourPanel label { font-size: 8px; } /* Reduced from 10px */
+        #header h1 { font-size: 20px; margin: 0 0 8px; }
+        #header p { font-size: 12px; margin: 3px 0; }
+        #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2, #info h2 { font-size: 14px; margin: 0 0 6px; }
+        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 8px; margin: 3px 0; }
+        #factsPanel p, #tourPanel p { font-size: 12px; margin: 3px 0; }
+        #tourPanel label { font-size: 8px; }
         #info ul { list-style: none; padding: 0; }
         #info li { display: flex; justify-content: flex-end; align-items: center; margin: 3px 0; }
-        .color-box { width: 8px; height: 8px; margin-left: 4px; display: inline-block; } /* Adjusted for smaller text */
-        #sequenceList, #focusList { display: flex; flex-direction: column; align-items: flex-end; font-family: monospace; font-size: 10px; margin: 0; padding: 0; list-style: none; } /* Reduced from 12px */
+        .color-box { width: 8px; height: 8px; margin-left: 4px; display: inline-block; }
+        #sequenceList, #focusList { display: flex; flex-direction: column; align-items: flex-end; font-family: monospace; font-size: 10px; margin: 0; padding: 0; list-style: none; }
         #focusList { align-items: flex-start; }
         #sequenceList li, #focusList li { margin: 2px 0; }
         .base-A { color: #ff3333; }
@@ -70,10 +78,13 @@
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 10px; /* Reduced from 12px */
+            font-size: 10px;
             border-radius: 4px;
             margin: 5px 2px;
         }
+        #prevFact { float: left; }
+        #nextFact { float: right; }
+        #pauseFact { display: inline-block; }
         #pauseFact.active { background: #555; }
         #tourSpeed { width: 100px; margin: 5px 0; }
         .toggle-icon {
@@ -81,40 +92,30 @@
             top: 5px;
             right: 5px;
             cursor: pointer;
-            font-size: 12px; /* Reduced from 14px */
-            color: #fff;
+            font-size: 12px;
+            color: #666;
         }
         .panel-content { display: block; }
         .panel-content.collapsed { display: none; }
-        .panel.collapsed { height: 26px; overflow: hidden; } /* Adjusted for smaller title */
-        #factProgress {
-            width: 100%;
-            height: 5px;
-            background: #444;
-            margin-top: 5px;
-        }
-        #factProgressBar {
-            height: 100%;
-            background: #888;
-            width: 0%;
-            transition: width linear;
-        }
+        .panel.collapsed { height: 30px; overflow: hidden; }
+        .panel h2 { display: block; }
     </style>
 </head>
 <body>
     <button id="unravelButton">Unravel DNA</button>
-    <button id="autoTourButton">Start Tour</button>
+    <button id="autoTourButton" class="throb">Start Tour</button>
+    <button id="funModeToggle">Fun Mode: On</button>
     <div id="header" class="panel">
         <span class="toggle-icon" onclick="togglePanel('header')">▼</span>
+        <h1>DNA 3D Simulation</h1>
         <div class="panel-content">
-            <h1>DNA 3D Simulation</h1>
             <p>Explore a dynamic 3D model of DNA. Use mouse to rotate, zoom, and pan, or click "Start Tour" for a guided view with multiple angles. Tap base pairs for details.</p>
         </div>
     </div>
     <div id="info" class="panel">
         <span class="toggle-icon" onclick="togglePanel('info')">▼</span>
+        <h2>Key</h2>
         <div class="panel-content">
-            <p><strong>Key:</strong></p>
             <ul>
                 <li>Adenine (A)<span class="color-box" style="background: #ff3333;"></span></li>
                 <li>Thymine (T)<span class="color-box" style="background: #33ff33;"></span></li>
@@ -127,24 +128,24 @@
     </div>
     <div id="sequencePanel" class="panel">
         <span class="toggle-icon" onclick="togglePanel('sequencePanel')">▼</span>
+        <h2>DNA Sequence (5' to 3')</h2>
         <div class="panel-content">
-            <h2>DNA Sequence (5' to 3')</h2>
             <ul id="sequenceList"></ul>
         </div>
     </div>
     <div id="focusPanel" class="panel">
         <span class="toggle-icon" onclick="togglePanel('focusPanel')">▼</span>
+        <h2>Focus Sequence</h2>
         <div class="panel-content">
-            <h2>Focus Sequence</h2>
             <ul id="focusList"></ul>
         </div>
     </div>
     <div id="factsPanel" class="panel">
         <span class="toggle-icon" onclick="togglePanel('factsPanel')">▼</span>
+        <h2>DNA Facts</h2>
         <div class="panel-content">
-            <h2>DNA Facts</h2>
             <p id="factText"></p>
-            <div>
+            <div style="overflow: hidden;">
                 <button id="prevFact">Previous</button>
                 <button id="pauseFact">Pause</button>
                 <button id="nextFact">Next</button>
@@ -156,8 +157,8 @@
     </div>
     <div id="tourPanel" class="panel">
         <span class="toggle-icon" onclick="togglePanel('tourPanel')">▼</span>
+        <h2>DNA Tour</h2>
         <div class="panel-content">
-            <h2>DNA Tour</h2>
             <p id="tourText"></p>
             <div>
                 <label for="tourSpeed">Tour Speed:</label>
@@ -167,15 +168,15 @@
     </div>
     <div id="baseInfo" class="panel">
         <span class="toggle-icon" onclick="togglePanel('baseInfo')">▼</span>
+        <h2>Base Pair</h2>
         <div class="panel-content">
-            <h2>Base Pair Info</h2>
             <p id="baseInfoText">Click a base to view details</p>
         </div>
     </div>
     <div id="controlsPanel" class="panel">
         <span class="toggle-icon" onclick="togglePanel('controlsPanel')">▼</span>
+        <h2>Controls</h2>
         <div class="panel-content">
-            <h2>Controls</h2>
             <p>
                 Tap: Select base<br>
                 Pinch: Zoom<br>
@@ -186,13 +187,14 @@
     </div>
     <div id="scalePanel" class="panel">
         <span class="toggle-icon" onclick="togglePanel('scalePanel')">▼</span>
+        <h2>Scale</h2>
         <div class="panel-content">
-            <h2>Scale (Approx.)</h2>
             <p>
                 Strand Width: 2 nm<br>
                 Base Pair: 0.34 nm<br>
                 Bond Length: 1 nm<br>
-                Backbone Diameter: 0.2 nm
+                Backbone Diameter: 0.2 nm<br>
+                Zoom: 500,000,000x
             </p>
         </div>
     </div>
@@ -292,6 +294,12 @@
         let currentTarget = new THREE.Vector3(0, 0, 0);
         let targetLookAt = new THREE.Vector3();
         let isFactPaused = false;
+        let isFunMode = true;
+        let draggedBase = null;
+        let dragStart = new THREE.Vector3();
+        let originalBasePosition = new THREE.Vector3();
+        let velocity = new THREE.Vector3();
+        let isDragging = false;
 
         // DNA facts
         const dnaFacts = [
@@ -394,14 +402,55 @@
             tourSpeed = parseFloat(tourSpeedSlider.value);
         });
 
+        // Fun Mode toggle
+        const funModeToggle = document.getElementById('funModeToggle');
+        funModeToggle.addEventListener('click', () => {
+            isFunMode = !isFunMode;
+            funModeToggle.textContent = `Fun Mode: ${isFunMode ? 'On' : 'Off'}`;
+        });
+
         // Toggle panel collapse/expand
         function togglePanel(panelId) {
             const panel = document.getElementById(panelId);
             const content = panel.querySelector('.panel-content');
             const icon = panel.querySelector('.toggle-icon');
+            const isCollapsing = !panel.classList.contains('collapsed');
             panel.classList.toggle('collapsed');
             content.classList.toggle('collapsed');
             icon.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+
+            // Adjust positions of panels below
+            if (panelId === 'focusPanel' || panelId === 'baseInfo' || panelId === 'controlsPanel') {
+                const panels = ['focusPanel', 'baseInfo', 'controlsPanel', 'scalePanel'];
+                let offset = 0;
+                let prevHeight = 0;
+                panels.forEach((id, index) => {
+                    const p = document.getElementById(id);
+                    if (index > 0) {
+                        const prevPanel = document.getElementById(panels[index - 1]);
+                        if (prevPanel.classList.contains('collapsed')) {
+                            prevHeight = 30; // Collapsed height
+                        } else {
+                            prevHeight = prevPanel.offsetHeight;
+                        }
+                        offset += prevHeight + 10; // 10px gap
+                        if (id === 'baseInfo') {
+                            p.style.top = `${150 + offset}px`; // Adjusted from 250px
+                        } else if (id === 'controlsPanel') {
+                            p.style.top = `${250 + offset}px`; // Adjusted from 350px
+                        } else if (id === 'scalePanel') {
+                            p.style.top = `${350 + offset}px`; // Adjusted from 450px
+                        }
+                    }
+                });
+            }
+            if (panelId === 'info' || panelId === 'sequencePanel') {
+                const sequencePanel = document.getElementById('sequencePanel');
+                const infoPanel = document.getElementById('info');
+                if (panelId === 'info') {
+                    sequencePanel.style.top = infoPanel.classList.contains('collapsed') ? '150px' : '300px';
+                }
+            }
         }
 
         // Generate DNA double helix
@@ -424,7 +473,7 @@
                 mesh1.position.set(radius * Math.cos(theta), y, radius * Math.sin(theta));
                 mesh1.castShadow = true;
                 mesh1.receiveShadow = true;
-                mesh1.userData = { base: base1, index: i * 2, pairIndex: i * 2 + 1 };
+                mesh1.userData = { base: base1, index: i * 2, pairIndex: i * 2 + 1, originalPosition: mesh1.position.clone(), velocity: new THREE.Vector3() };
                 group.add(mesh1);
                 meshes.bases.push(mesh1);
                 initialPositions.push({ x: radius * Math.cos(theta), y, z: radius * Math.sin(theta) });
@@ -434,7 +483,7 @@
                 mesh2.position.set(-radius * Math.cos(theta), y, -radius * Math.sin(theta));
                 mesh2.castShadow = true;
                 mesh2.receiveShadow = true;
-                mesh2.userData = { base: base2, index: i * 2 + 1, pairIndex: i * 2 };
+                mesh2.userData = { base: base2, index: i * 2 + 1, pairIndex: i * 2, originalPosition: mesh2.position.clone(), velocity: new THREE.Vector3() };
                 group.add(mesh2);
                 meshes.bases.push(mesh2);
                 initialPositions.push({ x: -radius * Math.cos(theta), y, z: -radius * Math.sin(theta) });
@@ -509,8 +558,76 @@
         }
         updateFocusDisplay();
 
+        // Handle mouse down for dragging
+        function onMouseDown(event) {
+            if (!isFunMode) return;
+            event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(meshes.bases);
+
+            if (intersects.length > 0) {
+                draggedBase = intersects[0].object;
+                dragStart.copy(intersects[0].point);
+                originalBasePosition.copy(draggedBase.position);
+                isDragging = true;
+                controls.enabled = false;
+            }
+        }
+
+        // Handle mouse move for dragging
+        function onMouseMove(event) {
+            if (!isDragging || !draggedBase) return;
+            event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+                camera.getWorldDirection(new THREE.Vector3()).negate(),
+                draggedBase.position
+            );
+            const ray = raycaster.ray;
+            const intersection = new THREE.Vector3();
+            if (ray.intersectPlane(plane, intersection)) {
+                draggedBase.position.copy(intersection);
+                // Update bond geometry
+                const bondIndex = Math.floor(draggedBase.userData.index / 2);
+                const bond = meshes.bonds[bondIndex];
+                const pairMesh = meshes.bases[draggedBase.userData.pairIndex];
+                const oldGeometry = bond.geometry;
+                const curve = new THREE.CatmullRomCurve3([draggedBase.position, pairMesh.position]);
+                bond.geometry = new THREE.TubeGeometry(curve, 10, 0.06, 8, false);
+                oldGeometry.dispose();
+            }
+        }
+
+        // Handle mouse up for releasing
+        function onMouseUp(event) {
+            if (!isDragging || !draggedBase) return;
+            event.preventDefault();
+            velocity.set(
+                (draggedBase.position.x - originalBasePosition.x) * 0.1,
+                (draggedBase.position.y - originalBasePosition.y) * 0.1,
+                (draggedBase.position.z - originalBasePosition.z) * 0.1
+            );
+            draggedBase.userData.velocity.copy(velocity);
+            const pairMesh = meshes.bases[draggedBase.userData.pairIndex];
+            pairMesh.userData.velocity.copy(velocity.clone().negate()); // Opposite velocity for paired base
+            draggedBase = null;
+            isDragging = false;
+            controls.enabled = true;
+        }
+
+        window.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+
         // Handle base pair click
         function onMouseClick(event) {
+            if (isFunMode || isDragging) return;
             event.preventDefault();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -570,6 +687,7 @@
         autoTourButton.addEventListener('click', () => {
             isAutoTour = !isAutoTour;
             autoTourButton.textContent = isAutoTour ? 'Stop Tour' : 'Start Tour';
+            autoTourButton.classList.toggle('throb', !isAutoTour);
             controls.enabled = !isAutoTour;
             if (isAutoTour) {
                 currentPosition.copy(camera.position);
@@ -599,8 +717,12 @@
                     const x2 = THREE.MathUtils.lerp(initPos2.x, -2, unravelProgress);
                     const z1 = THREE.MathUtils.lerp(initPos1.z, 0, unravelProgress);
                     const z2 = THREE.MathUtils.lerp(initPos2.z, 0, unravelProgress);
-                    mesh1.position.set(x1, y, z1);
-                    mesh2.position.set(x2, y, z2);
+                    if (!isDragging || mesh1 !== draggedBase) {
+                        mesh1.userData.originalPosition.set(x1, y, z1);
+                    }
+                    if (!isDragging || mesh2 !== draggedBase) {
+                        mesh2.userData.originalPosition.set(x2, y, z2);
+                    }
 
                     const bond = meshes.bonds[i];
                     const oldGeometry = bond.geometry;
@@ -651,13 +773,37 @@
                 dna.rotation.y += 0.004;
 
                 // Throb effect for selected base pair
-                if (selectedBase && pairedBase) {
+                if (selectedBase && pairedBase && !isFunMode) {
                     const throbScale = 1.5 + 0.2 * Math.sin(performance.now() * 0.005);
                     selectedBase.scale.set(throbScale, throbScale, throbScale);
                     pairedBase.scale.set(throbScale, throbScale, throbScale);
                 }
 
-                if ((selectedBase || isZoomingOut) && zoomProgress < 1) {
+                // Fun Mode: Spring back bases
+                if (isFunMode) {
+                    meshes.bases.forEach(base => {
+                        if (!isDragging || base !== draggedBase) {
+                            const originalPos = base.userData.originalPosition;
+                            const currentPos = base.position;
+                            const delta = originalPos.clone().sub(currentPos);
+                            const springForce = delta.multiplyScalar(0.1); // Spring constant
+                            base.userData.velocity.add(springForce);
+                            base.userData.velocity.multiplyScalar(0.95); // Damping
+                            base.position.add(base.userData.velocity);
+
+                            // Update bond geometry
+                            const bondIndex = Math.floor(base.userData.index / 2);
+                            const bond = meshes.bonds[bondIndex];
+                            const pairMesh = meshes.bases[base.userData.pairIndex];
+                            const oldGeometry = bond.geometry;
+                            const curve = new THREE.CatmullRomCurve3([base.position, pairMesh.position]);
+                            bond.geometry = new THREE.TubeGeometry(curve, 10, 0.06, 8, false);
+                            oldGeometry.dispose();
+                        }
+                    });
+                }
+
+                if ((selectedBase || isZoomingOut) && zoomProgress < 1 && !isFunMode) {
                     zoomProgress = Math.min(zoomProgress + 0.05, 1);
                     camera.position.lerpVectors(originalCameraPosition, targetCameraPosition, zoomProgress);
                     camera.lookAt(selectedBase ? selectedBase.position : new THREE.Vector3(0, 0, 0));
