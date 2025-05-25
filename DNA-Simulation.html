@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.8</title>
+    <title>DNA 3D Simulation - V1.0.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -45,7 +45,7 @@
             transition: height 0.3s ease, top 0.3s ease, bottom 0.3s ease;
         }
         #header { top: 10px; left: 50%; transform: translateX(-50%); max-width: 80%; text-align: center; }
-        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 76.545px; width: 76.545px; } /* Reduced from 85.05px by 10% */
+        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 76.545px; width: 76.545px; }
         #info { top: 100px; right: 10px; }
         #info.collapsed { top: 60px; }
         #sequencePanel { top: 300px; right: 10px; }
@@ -116,7 +116,7 @@
         <span class="toggle-icon" onclick="togglePanel('header')">▼</span>
         <h1>DNA 3D Simulation</h1>
         <div class="panel-content">
-            <p>Explore a dynamic 3D model of DNA</p>
+            <p>Explore a dynamic 3D model of DNA. Use mouse to rotate, zoom, and pan, or click "Start Tour" for a guided view with multiple angles. Tap base pairs for details.</p>
         </div>
     </div>
     <div id="info" class="panel">
@@ -235,9 +235,12 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
+        controls.screenSpacePanning = true;
         controls.minDistance = 5;
         controls.maxDistance = 50;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.enableRotate = true;
 
         // Camera position
         camera.position.set(0, 5, 15);
@@ -518,11 +521,19 @@
         }
         updateFocusDisplay();
 
-        // Handle base pair click
-        function onMouseClick(event) {
+        // Handle base pair selection (mouse and touch)
+        function onSelect(event) {
             event.preventDefault();
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            let clientX, clientY;
+            if (event.type === 'touchstart') {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(meshes.bases);
@@ -549,7 +560,7 @@
                 controls.enabled = false;
                 isZoomingOut = false;
             } else {
-                baseInfoText.textContent = "Click a base to view details";
+                baseInfoText.textContent = "Click or tap a base to view details";
                 if (selectedBase) {
                     selectedBase.scale.set(1, 1, 1);
                     pairedBase.scale.set(1, 1, 1);
@@ -563,7 +574,8 @@
                 isZoomingOut = true;
             }
         }
-        window.addEventListener('click', onMouseClick);
+        window.addEventListener('click', onSelect);
+        window.addEventListener('touchstart', onSelect, { passive: false });
 
         // Unravel button
         const unravelButton = document.getElementById('unravelButton');
