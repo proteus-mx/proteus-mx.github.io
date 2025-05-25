@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.9</title>
+    <title>DNA 3D Simulation - V1.0.10</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -177,7 +177,7 @@
         <span class="toggle-icon" onclick="togglePanel('baseInfo')">▼</span>
         <h2>Base Pair</h2>
         <div class="panel-content">
-            <p id="baseInfoText">Click a base to view details</p>
+            <p id="baseInfoText">Click or tap a base to view details</p>
         </div>
     </div>
     <div id="controlsPanel" class="panel">
@@ -579,16 +579,20 @@
 
         // Unravel button
         const unravelButton = document.getElementById('unravelButton');
-        unravelButton.addEventListener('click', () => {
+        function handleUnravel(event) {
+            event.preventDefault();
             isUnraveled = !isUnraveled;
             unravelButton.textContent = isUnraveled ? 'Reform DNA' : 'Unravel DNA';
             updateSequenceDisplay();
             updateFocusDisplay();
-        });
+        }
+        unravelButton.addEventListener('click', handleUnravel);
+        unravelButton.addEventListener('touchstart', handleUnravel, { passive: false });
 
         // Auto tour button
         const autoTourButton = document.getElementById('autoTourButton');
-        autoTourButton.addEventListener('click', () => {
+        function handleAutoTour(event) {
+            event.preventDefault();
             isAutoTour = !isAutoTour;
             autoTourButton.textContent = isAutoTour ? 'Stop Tour' : 'Start Tour';
             autoTourButton.classList.toggle('throb', !isAutoTour);
@@ -606,7 +610,9 @@
                 isUnraveled = false; // Reform DNA on tour stop
                 unravelButton.textContent = 'Unravel DNA';
             }
-        });
+        }
+        autoTourButton.addEventListener('click', handleAutoTour);
+        autoTourButton.addEventListener('touchstart', handleAutoTour, { passive: false });
 
         function updateDNA() {
             try {
