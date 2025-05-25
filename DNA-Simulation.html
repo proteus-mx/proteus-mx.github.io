@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.11</title>
+    <title>DNA 3D Simulation - V1.0.17</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -16,7 +16,7 @@
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         canvas { display: block; }
-        #unravelButton, #autoTourButton {
+        #quizButton, #unravelButton, #autoTourButton {
             position: absolute;
             bottom: 10px;
             padding: 8px;
@@ -27,6 +27,7 @@
             font-size: 14px;
             border-radius: 8px;
         }
+        #quizButton { left: 10px; bottom: 50px; }
         #unravelButton { left: 10px; }
         #autoTourButton { right: 10px; }
         #autoTourButton.throb {
@@ -107,9 +108,67 @@
         .panel.collapsed { height: 30px; overflow: hidden; }
         .panel h2 { display: block; }
         #factsPanel div.button-container { display: flex; justify-content: space-between; align-items: center; }
+        #quizModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            z-index: 1000;
+            text-align: left;
+        }
+        #quizModal h2 { font-size: 18px; margin: 0 0 10px; }
+        #quizModal p { font-size: 14px; margin: 5px 0; }
+        #quizModal button {
+            padding: 6px 12px;
+            background: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        #quizModal button:hover { background: #555; }
+        #quizModal input[type="radio"] { margin-right: 5px; }
+        #quizModal label { font-size: 12px; cursor: pointer; }
+        #quizModal .question { margin: 10px 0; }
+        #quizModal .closeQuiz { float: right; }
+        #quizModal .score, #quizModal .timer { font-size: 14px; margin: 5px 0; }
+        #quizModal .summary { display: none; }
+        #quizModal .feedback { font-size: 12px; margin: 10px 0; }
+        #nextQuestion { display: none; }
+        #quizProgress { width: 100%; height: 10px; background: #333; border-radius: 5px; margin: 10px 0; }
+        #quizProgressBar { height: 100%; background: #33ff33; border-radius: 5px; width: 0%; transition: width 0.3s ease; }
+        #submitMessage {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #33ff33;
+            color: #000;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1001;
+            animation: flash 0.5s alternate infinite;
+        }
+        @keyframes flash {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
+    <button id="quizButton">Quiz</button>
     <button id="unravelButton">Unravel DNA</button>
     <button id="autoTourButton" class="throb">Start Tour</button>
     <div id="header" class="panel">
@@ -205,6 +264,18 @@
             </p>
         </div>
     </div>
+    <div id="quizModal">
+        <button class="closeQuiz">Close</button>
+        <h2>DNA Quiz</h2>
+        <div class="score">Score: <span id="quizScore">0</span>/12</div>
+        <div class="timer">Time: <span id="quizTimer">0:00</span></div>
+        <div id="quizProgress"><div id="quizProgressBar"></div></div>
+        <div id="quizQuestions"></div>
+        <div id="quizFeedback" class="feedback"></div>
+        <button id="nextQuestion">Next</button>
+        <div class="summary" id="quizSummary"></div>
+        <div id="submitMessage">Submitting Score</div>
+    </div>
     <script>
         // Scene setup
         const scene = new THREE.Scene();
@@ -298,7 +369,7 @@
         let dnaSequence = [];
         let isAutoTour = false;
         let tourProgress = 0;
-        let tourSpeed = 0.0025; // Reduced from 0.005 for slower tour
+        let tourSpeed = 0.0025;
         let currentPosition = new THREE.Vector3(0, 5, 15);
         let targetPosition = new THREE.Vector3();
         let currentTarget = new THREE.Vector3(0, 0, 0);
@@ -415,6 +486,247 @@
             content.classList.toggle('collapsed');
             icon.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
         }
+
+        // Quiz functionality
+        const quizQuestions = [
+            {
+                question: "What does DNA stand for?",
+                options: ["Deoxyribonucleic Acid", "Dioxyribonucleic Acid", "Deoxynucleic Acid", "Dinucleic Acid"],
+                answer: "Deoxyribonucleic Acid",
+                feedback: "DNA, or Deoxyribonucleic Acid, is the molecule that carries genetic information in living organisms. The incorrect options are similar-sounding but not accurate terms."
+            },
+            {
+                question: "How many base pairs are in a human DNA strand?",
+                options: ["3 million", "3 billion", "30 million", "300 billion"],
+                answer: "3 billion",
+                feedback: "The human genome contains approximately 3 billion base pairs, forming the DNA in each cell. Other options are either too low or excessively high."
+            },
+            {
+                question: "Where is DNA stored in cells?",
+                options: ["Cytoplasm", "Mitochondria", "Nucleus", "Endoplasmic Reticulum"],
+                answer: "Nucleus",
+                feedback: "DNA is primarily stored in the nucleus of eukaryotic cells, where it is organized into chromosomes. Mitochondria contain a small amount of DNA, but the nucleus is the main storage site."
+            },
+            {
+                question: "Which base pairs with Adenine?",
+                options: ["Guanine", "Cytosine", "Thymine", "Uracil"],
+                answer: "Thymine",
+                feedback: "In DNA, Adenine pairs with Thymine via two hydrogen bonds. Guanine pairs with Cytosine, and Uracil is found in RNA, not DNA."
+            },
+            {
+                question: "When was the DNA double helix structure discovered?",
+                options: ["1943", "1953", "1963", "1973"],
+                answer: "1953",
+                feedback: "The double helix structure of DNA was discovered in 1953 by Watson and Crick, a landmark in molecular biology. The other years are incorrect."
+            },
+            {
+                question: "What is the width of a DNA strand?",
+                options: ["2 nanometers", "2 micrometers", "2 millimeters", "2 centimeters"],
+                answer: "2 nanometers",
+                feedback: "A DNA strand is about 2 nanometers wide, making it incredibly small. The other options represent much larger scales."
+            },
+            {
+                question: "What percentage of human DNA is shared with chimpanzees?",
+                options: ["50-60%", "70-80%", "98-99%", "90-95%"],
+                answer: "98-99%",
+                feedback: "Humans share 98-99% of their DNA with chimpanzees, reflecting our close evolutionary relationship. The other percentages are too low."
+            },
+            {
+                question: "What is mitochondrial DNA inherited from?",
+                options: ["Father", "Mother", "Both parents", "Neither parent"],
+                answer: "Mother",
+                feedback: "Mitochondrial DNA is inherited solely from the mother, as mitochondria are passed through the egg. The father's mitochondria are not typically inherited."
+            },
+            {
+                question: "What percentage of human DNA codes for proteins?",
+                options: ["1-2%", "10-20%", "50-60%", "80-90%"],
+                answer: "1-2%",
+                feedback: "Only about 1-2% of human DNA codes for proteins; the rest includes regulatory and non-coding regions. The higher percentages are incorrect."
+            },
+            {
+                question: "What technology allows precise DNA editing?",
+                options: ["PCR", "CRISPR", "Gel Electrophoresis", "DNA Sequencing"],
+                answer: "CRISPR",
+                feedback: "CRISPR is a precise gene-editing technology. PCR amplifies DNA, gel electrophoresis separates DNA, and DNA sequencing reads DNA sequences."
+            }
+        ];
+
+        let quizScore = 0;
+        let quizTimer = 0;
+        let quizInterval;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let questionStartTime = 0;
+        const quizModal = document.getElementById('quizModal');
+        const quizQuestionsDiv = document.getElementById('quizQuestions');
+        const quizFeedbackDiv = document.getElementById('quizFeedback');
+        const quizScoreSpan = document.getElementById('quizScore');
+        const quizTimerSpan = document.getElementById('quizTimer');
+        const nextQuestionButton = document.getElementById('nextQuestion');
+        const quizSummaryDiv = document.getElementById('quizSummary');
+        const quizProgressBar = document.getElementById('quizProgressBar');
+        const submitMessage = document.getElementById('submitMessage');
+
+        function showQuestion(index) {
+            const q = quizQuestions[index];
+            quizQuestionsDiv.innerHTML = `
+                <div class="question">
+                    <p>${index + 1}. ${q.question}</p>
+                    ${q.options.map((option, i) => `
+                        <label>
+                            <input type="radio" name="q${index}" value="${option}">
+                            ${option}
+                        </label><br>
+                    `).join('')}
+                </div>
+            `;
+            quizFeedbackDiv.innerHTML = '';
+            nextQuestionButton.style.display = 'none';
+            quizProgressBar.style.width = `${((index + 1) / quizQuestions.length) * 100}%`;
+            questionStartTime = quizTimer;
+
+            // Add touch support for radio buttons
+            const radioInputs = quizQuestionsDiv.querySelectorAll('input[type="radio"]');
+            radioInputs.forEach(input => {
+                input.parentElement.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    input.checked = true;
+                    showFeedback(index);
+                }, { passive: false });
+                input.parentElement.addEventListener('click', () => {
+                    showFeedback(index);
+                });
+            });
+        }
+
+        function showFeedback(index) {
+            const q = quizQuestions[index];
+            const selected = document.querySelector(`input[name="q${index}"]:checked`);
+            if (!selected) return;
+
+            const isCorrect = selected.value === q.answer;
+            const timeTaken = quizTimer - questionStartTime;
+            const bonusPoint = (timeTaken <= 5 && isCorrect) ? 1 : 0;
+            userAnswers[index] = { answer: selected.value, bonus: bonusPoint };
+            if (isCorrect) quizScore += 1 + bonusPoint;
+            quizScoreSpan.textContent = quizScore;
+
+            quizFeedbackDiv.innerHTML = `
+                <p>Your answer: ${selected.value}</p>
+                <p>Correct answer: ${q.answer}</p>
+                <p style="color: ${isCorrect ? '#33ff33' : '#ff3333'}">${isCorrect ? 'Correct!' : 'Incorrect'}</p>
+                <p>${q.feedback}</p>
+                ${isCorrect && bonusPoint ? '<p style="color: #33ff33">+1 Bonus Point for answering in ' + timeTaken + ' seconds!</p>' : ''}
+            `;
+            nextQuestionButton.style.display = 'block';
+            const radioInputs = quizQuestionsDiv.querySelectorAll('input[type="radio"]');
+            radioInputs.forEach(input => input.disabled = true);
+        }
+
+        function startQuiz() {
+            quizScore = 0;
+            quizTimer = 0;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            quizScoreSpan.textContent = quizScore;
+            quizTimerSpan.textContent = "0:00";
+            quizSummaryDiv.style.display = 'none';
+            nextQuestionButton.style.display = 'none';
+            quizProgressBar.style.width = '10%';
+            submitMessage.style.display = 'none';
+            showQuestion(currentQuestionIndex);
+
+            quizInterval = setInterval(() => {
+                quizTimer++;
+                const minutes = Math.floor(quizTimer / 60);
+                const seconds = quizTimer % 60;
+                quizTimerSpan.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+
+            quizModal.style.display = 'block';
+        }
+
+        function endQuiz() {
+            clearInterval(quizInterval);
+            quizQuestionsDiv.style.display = 'none';
+            quizFeedbackDiv.style.display = 'none';
+            nextQuestionButton.style.display = 'none';
+            quizSummaryDiv.style.display = 'block';
+            quizProgressBar.style.width = '100%';
+
+            const percentage = ((quizScore / 12) * 100).toFixed(2);
+            let summaryHTML = `
+                <h3>Quiz Summary</h3>
+                <p>Score: ${quizScore}/12 (${percentage}%)</p>
+                <p>Time: ${quizTimerSpan.textContent}</p>
+                <button id="submitScoreButton">Submit Score to Leaderboard</button>
+            `;
+            quizQuestions.forEach((q, index) => {
+                const userAnswer = userAnswers[index] || { answer: 'None', bonus: 0 };
+                const isCorrect = userAnswer.answer === q.answer;
+                summaryHTML += `
+                    <p>${index + 1}. ${q.question}<br>
+                    Your answer: ${userAnswer.answer}<br>
+                    Correct answer: ${q.answer}<br>
+                    ${isCorrect ? '<span style="color: #33ff33;">Correct' + (userAnswer.bonus ? ' (+1 Bonus)' : '') + '</span>' : '<span style="color: #ff3333;">Incorrect</span>'}</p>
+                `;
+            });
+            quizSummaryDiv.innerHTML = summaryHTML;
+
+            // Add event listener for submit score button
+            const submitScoreButton = document.getElementById('submitScoreButton');
+            submitScoreButton.addEventListener('click', submitScore);
+            submitScoreButton.addEventListener('touchstart', submitScore, { passive: false });
+        }
+
+        function submitScore(event) {
+            event.preventDefault();
+            submitMessage.style.display = 'block';
+            setTimeout(() => {
+                submitMessage.style.display = 'none';
+                // Mock leaderboard submission (no backend)
+                console.log(`Score ${quizScore}/12 submitted to leaderboard at ${quizTimerSpan.textContent}`);
+            }, 2000);
+        }
+
+        function closeQuiz() {
+            clearInterval(quizInterval);
+            quizModal.style.display = 'none';
+            quizQuestionsDiv.style.display = 'block';
+            quizFeedbackDiv.style.display = 'block';
+            quizSummaryDiv.style.display = 'none';
+            nextQuestionButton.style.display = 'none';
+            quizProgressBar.style.width = '0%';
+            submitMessage.style.display = 'none';
+        }
+
+        const quizButton = document.getElementById('quizButton');
+        function handleQuiz(event) {
+            event.preventDefault();
+            startQuiz();
+        }
+        quizButton.addEventListener('click', handleQuiz);
+        quizButton.addEventListener('touchstart', handleQuiz, { passive: false });
+
+        document.querySelector('.closeQuiz').addEventListener('click', closeQuiz);
+        document.querySelector('.closeQuiz').addEventListener('touchstart', closeQuiz, { passive: false });
+
+        nextQuestionButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizQuestions.length) {
+                showQuestion(currentQuestionIndex);
+            } else {
+                endQuiz();
+            }
+        });
+        nextQuestionButton.addEventListener('touchstart', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizQuestions.length) {
+                showQuestion(currentQuestionIndex);
+            } else {
+                endQuiz();
+            }
+        }, { passive: false });
 
         // Generate DNA double helix
         function createDNAStrand() {
