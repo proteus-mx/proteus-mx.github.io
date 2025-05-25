@@ -678,10 +678,20 @@
             submitScoreButton.addEventListener('click', submitScore);
             submitScoreButton.addEventListener('touchstart', submitScore, { passive: false });
         }
-
+        function submitScoreToGameCenter(score, leaderboardId) {
+            window.webkit?.messageHandlers.gridWarsHandler.postMessage({
+                action: "submitScore",
+                score: score,
+                leaderboardId: leaderboardId
+            });
+        }  
+        
         function submitScore(event) {
             event.preventDefault();
             submitMessage.style.display = 'block';
+
+            submitScoreToGameCenter(quizScore, "dnasimLeaderboard1");
+
             setTimeout(() => {
                 submitMessage.style.display = 'none';
                 // Mock leaderboard submission (no backend)
