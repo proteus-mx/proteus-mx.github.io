@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.18</title>
+    <title>DNA 3D Simulation - V1.0.17</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -64,12 +64,12 @@
         #controlsPanel.collapsed { top: 310px; }
         #scalePanel { top: 450px; left: 10px; text-align: left; }
         #scalePanel.collapsed { top: 410px; }
-        #header h1 { font-size: 20px; margin: 0 0 8px; }
-        #header p { font-size: 12px; margin: 3px 0; }
-        #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2, #info h2 { font-size: 14px; margin: 0 0 6px; }
-        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 10px; margin: 3px 0; }
-        #factsPanel p, #tourPanel p { font-size: 12px; margin: 3px 0; }
-        #tourPanel label { font-size: 10px; }
+        #header h1 { font-size: 18px; margin: 0 0 8px; }
+        #header p { font-size: 10px; margin: 3px 0; }
+        #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2, #info h2 { font-size: 12px; margin: 0 0 6px; }
+        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 8px; margin: 3px 0; }
+        #factsPanel p, #tourPanel p { font-size: 10px; margin: 3px 0; }
+        #tourPanel label { font-size: 8px; }
         #info ul { list-style: none; padding: 0; }
         #info li { display: flex; justify-content: flex-end; align-items: center; margin: 3px 0; }
         .color-box { width: 10px; height: 10px; margin-left: 4px; display: inline-block; }
@@ -82,12 +82,12 @@
         .base-C { color: #ffff33; }
         #factText, #tourText { opacity: 1; }
         #prevFact, #nextFact, #pauseFact {
-            padding: 8px;
+            padding: 6px;
             background: #333;
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 10px;
             border-radius: 4px;
             margin: 5px 2px;
             touch-action: manipulation;
@@ -102,9 +102,10 @@
             top: 5px;
             right: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
             touch-action: manipulation;
+            padding: 8px;
         }
         .panel-content { display: block; }
         .panel-content.collapsed { display: none; }
@@ -121,31 +122,34 @@
             color: #fff;
             padding: 20px;
             border-radius: 8px;
-            max-width: 90%;
+            max-width: 95%;
             max-height: 80%;
             overflow-y: auto;
             z-index: 1000;
             text-align: left;
         }
-        #quizModal h2 { font-size: 18px; margin: 0 0 10px; }
-        #quizModal p { font-size: 14px; margin: 5px 0; }
+        #quizModal.active {
+            display: block;
+        }
+        #quizModal h2 { font-size: 16px; margin: 0 0 10px; }
+        #quizModal p { font-size: 12px; margin: 5px 0; }
         #quizModal button {
-            padding: 8px 16px;
+            padding: 6px 12px;
             background: #333;
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             border-radius: 4px;
             margin: 5px;
             touch-action: manipulation;
         }
         #quizModal button:hover { background: #555; }
         #quizModal input[type="radio"] { margin-right: 5px; }
-        #quizModal label { font-size: 14px; cursor: pointer; }
+        #quizModal label { font-size: 12px; cursor: pointer; }
         #quizModal .question { margin: 10px 0; }
         #quizModal .closeQuiz { float: right; }
-        #quizModal .score, #quizModal .timer { font-size: 14px; margin: 5px 0; }
+        #quizModal .score, #quizModal .timer { font-size: 12px; margin: 5px 0; }
         #quizModal .summary { display: none; }
         #quizModal .feedback { font-size: 12px; margin: 10px 0; }
         #nextQuestion { display: none; }
@@ -164,6 +168,19 @@
             font-size: 14px;
             z-index: 1001;
             animation: flash 0.5s alternate infinite;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        #overlay.active {
+            display: block;
         }
         @keyframes flash {
             0% { opacity: 1; }
@@ -196,6 +213,7 @@
     </style>
 </head>
 <body>
+    <div id="overlay"></div>
     <button id="quizButton">Quiz</button>
     <button id="unravelButton">Unravel DNA</button>
     <button id="autoTourButton" class="throb">Start Tour</button>
@@ -598,6 +616,7 @@
         const quizSummaryDiv = document.getElementById('quizSummary');
         const quizProgressBar = document.getElementById('quizProgressBar');
         const submitMessage = document.getElementById('submitMessage');
+        const overlay = document.getElementById('overlay');
 
         function showQuestion(index) {
             const q = quizQuestions[index];
@@ -667,6 +686,12 @@
             quizProgressBar.style.width = '10%';
             submitMessage.style.display = 'none';
             showQuestion(currentQuestionIndex);
+            overlay.classList.add('active');
+            quizModal.classList.add('active');
+            isFactPaused = true;
+            pauseFactButton.classList.add('active');
+            pauseFactButton.textContent = 'Resume';
+            factTimer = 0;
 
             quizInterval = setInterval(() => {
                 quizTimer++;
@@ -674,8 +699,6 @@
                 const seconds = quizTimer % 60;
                 quizTimerSpan.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             }, 1000);
-
-            quizModal.style.display = 'block';
         }
 
         function endQuiz() {
@@ -685,6 +708,12 @@
             nextQuestionButton.style.display = 'none';
             quizSummaryDiv.style.display = 'block';
             quizProgressBar.style.width = '100%';
+            overlay.classList.remove('active');
+            quizModal.classList.remove('active');
+            isFactPaused = false;
+            pauseFactButton.classList.remove('active');
+            pauseFactButton.textContent = 'Pause';
+            factTimer = 0;
 
             const percentage = ((quizScore / 12) * 100).toFixed(2);
             let summaryHTML = `
@@ -733,13 +762,18 @@
         function closeQuiz(event) {
             event.preventDefault();
             clearInterval(quizInterval);
-            quizModal.style.display = 'none';
+            quizModal.classList.remove('active');
+            overlay.classList.remove('active');
             quizQuestionsDiv.style.display = 'block';
             quizFeedbackDiv.style.display = 'block';
             quizSummaryDiv.style.display = 'none';
             nextQuestionButton.style.display = 'none';
             quizProgressBar.style.width = '0%';
             submitMessage.style.display = 'none';
+            isFactPaused = false;
+            pauseFactButton.classList.remove('active');
+            pauseFactButton.textContent = 'Pause';
+            factTimer = 0;
         }
 
         const quizButton = document.getElementById('quizButton');
