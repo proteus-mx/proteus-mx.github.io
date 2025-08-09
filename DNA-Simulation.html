@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA 3D Simulation - V1.0.17</title>
+    <title>DNA 3D Simulation - V1.0.18</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0GXQFMX3WV"></script>
@@ -19,15 +19,16 @@
         #quizButton, #unravelButton, #autoTourButton {
             position: absolute;
             bottom: 10px;
-            padding: 8px;
+            padding: 12px;
             background: #222;
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             border-radius: 8px;
+            touch-action: manipulation;
         }
-        #quizButton { left: 10px; bottom: 50px; }
+        #quizButton { left: 10px; bottom: 60px; }
         #unravelButton { left: 10px; }
         #autoTourButton { right: 10px; }
         #autoTourButton.throb {
@@ -45,17 +46,17 @@
             border-radius: 8px;
             transition: height 0.3s ease, top 0.3s ease, bottom 0.3s ease;
         }
-        #header { top: 10px; left: 50%; transform: translateX(-50%); max-width: 80%; text-align: center; }
-        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 76.545px; width: 76.545px; }
+        #header { top: 10px; left: 50%; transform: translateX(-50%); max-width: 90%; text-align: center; }
+        #info, #sequencePanel, #focusPanel, #baseInfo, #controlsPanel, #scalePanel { max-width: 100px; width: 100px; }
         #info { top: 100px; right: 10px; }
         #info.collapsed { top: 60px; }
         #sequencePanel { top: 300px; right: 10px; }
         #sequencePanel.collapsed { top: 260px; }
         #focusPanel { top: 100px; left: 10px; text-align: left; }
         #focusPanel.collapsed { top: 60px; }
-        #factsPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; }
+        #factsPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 90%; text-align: center; }
         #factsPanel.collapsed { bottom: 70px; }
-        #tourPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 300px; text-align: center; display: none; }
+        #tourPanel { bottom: 30px; left: 50%; transform: translateX(-50%); max-width: 90%; text-align: center; display: none; }
         #tourPanel.collapsed { bottom: 70px; }
         #baseInfo { top: 250px; left: 10px; text-align: left; }
         #baseInfo.collapsed { top: 210px; }
@@ -66,12 +67,12 @@
         #header h1 { font-size: 20px; margin: 0 0 8px; }
         #header p { font-size: 12px; margin: 3px 0; }
         #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2, #info h2 { font-size: 14px; margin: 0 0 6px; }
-        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 8px; margin: 3px 0; }
+        #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 10px; margin: 3px 0; }
         #factsPanel p, #tourPanel p { font-size: 12px; margin: 3px 0; }
-        #tourPanel label { font-size: 8px; }
+        #tourPanel label { font-size: 10px; }
         #info ul { list-style: none; padding: 0; }
         #info li { display: flex; justify-content: flex-end; align-items: center; margin: 3px 0; }
-        .color-box { width: 8px; height: 8px; margin-left: 4px; display: inline-block; }
+        .color-box { width: 10px; height: 10px; margin-left: 4px; display: inline-block; }
         #sequenceList, #focusList { display: flex; flex-direction: column; align-items: flex-end; font-family: monospace; font-size: 10px; margin: 0; padding: 0; list-style: none; }
         #focusList { align-items: flex-start; }
         #sequenceList li, #focusList li { margin: 2px 0; }
@@ -81,14 +82,15 @@
         .base-C { color: #ffff33; }
         #factText, #tourText { opacity: 1; }
         #prevFact, #nextFact, #pauseFact {
-            padding: 6px;
+            padding: 8px;
             background: #333;
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 12px;
             border-radius: 4px;
             margin: 5px 2px;
+            touch-action: manipulation;
         }
         #prevFact { float: left; }
         #nextFact { float: right; }
@@ -100,8 +102,9 @@
             top: 5px;
             right: 5px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             color: #666;
+            touch-action: manipulation;
         }
         .panel-content { display: block; }
         .panel-content.collapsed { display: none; }
@@ -127,18 +130,19 @@
         #quizModal h2 { font-size: 18px; margin: 0 0 10px; }
         #quizModal p { font-size: 14px; margin: 5px 0; }
         #quizModal button {
-            padding: 6px 12px;
+            padding: 8px 16px;
             background: #333;
             color: #fff;
             border: none;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             border-radius: 4px;
             margin: 5px;
+            touch-action: manipulation;
         }
         #quizModal button:hover { background: #555; }
         #quizModal input[type="radio"] { margin-right: 5px; }
-        #quizModal label { font-size: 12px; cursor: pointer; }
+        #quizModal label { font-size: 14px; cursor: pointer; }
         #quizModal .question { margin: 10px 0; }
         #quizModal .closeQuiz { float: right; }
         #quizModal .score, #quizModal .timer { font-size: 14px; margin: 5px 0; }
@@ -165,6 +169,30 @@
             0% { opacity: 1; }
             100% { opacity: 0.5; }
         }
+        @media (max-width: 600px) {
+            #quizButton, #unravelButton, #autoTourButton {
+                padding: 10px;
+                font-size: 14px;
+            }
+            #prevFact, #nextFact, #pauseFact {
+                padding: 6px;
+                font-size: 10px;
+            }
+            .toggle-icon {
+                font-size: 12px;
+                padding: 8px;
+            }
+            #header h1 { font-size: 18px; }
+            #header p { font-size: 10px; }
+            #sequencePanel h2, #focusPanel h2, #factsPanel h2, #baseInfo h2, #controlsPanel h2, #tourPanel h2, #scalePanel h2, #info h2 { font-size: 12px; }
+            #info p, #info ul, #sequencePanel p, #focusPanel p, #baseInfo p, #controlsPanel p, #tourPanel p, #scalePanel p { font-size: 8px; }
+            #factsPanel p, #tourPanel p { font-size: 10px; }
+            #tourPanel label { font-size: 8px; }
+            #quizModal h2 { font-size: 16px; }
+            #quizModal p { font-size: 12px; }
+            #quizModal button { font-size: 12px; padding: 6px 12px; }
+            #quizModal label { font-size: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -172,14 +200,14 @@
     <button id="unravelButton">Unravel DNA</button>
     <button id="autoTourButton" class="throb">Start Tour</button>
     <div id="header" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('header')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('header')" ontouchstart="togglePanel('header')">▼</span>
         <h1>DNA 3D Simulation</h1>
         <div class="panel-content">
             <p>Explore a dynamic 3D model of DNA</p>
         </div>
     </div>
     <div id="info" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('info')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('info')" ontouchstart="togglePanel('info')">▼</span>
         <h2>Key</h2>
         <div class="panel-content">
             <ul>
@@ -193,28 +221,28 @@
         </div>
     </div>
     <div id="sequencePanel" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('sequencePanel')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('sequencePanel')" ontouchstart="togglePanel('sequencePanel')">▼</span>
         <h2>DNA Sequence (5' to 3')</h2>
         <div class="panel-content">
             <ul id="sequenceList"></ul>
         </div>
     </div>
     <div id="focusPanel" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('focusPanel')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('focusPanel')" ontouchstart="togglePanel('focusPanel')">▼</span>
         <h2>Focus Sequence</h2>
         <div class="panel-content">
             <ul id="focusList"></ul>
         </div>
     </div>
     <div id="factsPanel" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('factsPanel')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('factsPanel')" ontouchstart="togglePanel('factsPanel')">▼</span>
         <h2>DNA Facts</h2>
         <div class="panel-content">
             <p id="factText"></p>
             <div class="button-container">
-                <button id="prevFact">Previous</button>
-                <button id="pauseFact">Pause</button>
-                <button id="nextFact">Next</button>
+                <button id="prevFact" ontouchstart="handleFactNavigation(event, 'prev')">Previous</button>
+                <button id="pauseFact" ontouchstart="handleFactNavigation(event, 'pause')">Pause</button>
+                <button id="nextFact" ontouchstart="handleFactNavigation(event, 'next')">Next</button>
             </div>
             <div id="factProgress">
                 <div id="factProgressBar"></div>
@@ -222,7 +250,7 @@
         </div>
     </div>
     <div id="tourPanel" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('tourPanel')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('tourPanel')" ontouchstart="togglePanel('tourPanel')">▼</span>
         <h2>DNA Tour</h2>
         <div class="panel-content">
             <p id="tourText"></p>
@@ -233,14 +261,14 @@
         </div>
     </div>
     <div id="baseInfo" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('baseInfo')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('baseInfo')" ontouchstart="togglePanel('baseInfo')">▼</span>
         <h2>Base Pair</h2>
         <div class="panel-content">
             <p id="baseInfoText">Click or tap a base to view details</p>
         </div>
     </div>
     <div id="controlsPanel" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('controlsPanel')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('controlsPanel')" ontouchstart="togglePanel('controlsPanel')">▼</span>
         <h2>Controls</h2>
         <div class="panel-content">
             <p>
@@ -252,7 +280,7 @@
         </div>
     </div>
     <div id="scalePanel" class="panel">
-        <span class="toggle-icon" onclick="togglePanel('scalePanel')">▼</span>
+        <span class="toggle-icon" onclick="togglePanel('scalePanel')" ontouchstart="togglePanel('scalePanel')">▼</span>
         <h2>Scale</h2>
         <div class="panel-content">
             <p>
@@ -265,14 +293,14 @@
         </div>
     </div>
     <div id="quizModal">
-        <button class="closeQuiz">Close</button>
+        <button class="closeQuiz" ontouchstart="closeQuiz(event)">Close</button>
         <h2>DNA Quiz</h2>
         <div class="score">Score: <span id="quizScore">0</span>/12</div>
         <div class="timer">Time: <span id="quizTimer">0:00</span></div>
         <div id="quizProgress"><div id="quizProgressBar"></div></div>
         <div id="quizQuestions"></div>
         <div id="quizFeedback" class="feedback"></div>
-        <button id="nextQuestion">Next</button>
+        <button id="nextQuestion" ontouchstart="handleNextQuestion(event)">Next</button>
         <div class="summary" id="quizSummary"></div>
         <div id="submitMessage">Submitting Score</div>
     </div>
@@ -436,22 +464,26 @@
         const factProgressBar = document.getElementById('factProgressBar');
         let factTimer = 0;
         const factInterval = 7000; // 7 seconds
-        prevFactButton.addEventListener('click', () => {
-            factIndex = (factIndex - 1 + dnaFacts.length) % dnaFacts.length;
-            updateFact();
-            factTimer = 0; // Reset timer
-        });
-        nextFactButton.addEventListener('click', () => {
-            factIndex = (factIndex + 1) % dnaFacts.length;
-            updateFact();
-            factTimer = 0; // Reset timer
-        });
-        pauseFactButton.addEventListener('click', () => {
-            isFactPaused = !isFactPaused;
-            pauseFactButton.classList.toggle('active', isFactPaused);
-            pauseFactButton.textContent = isFactPaused ? 'Resume' : 'Pause';
-            if (!isFactPaused) factTimer = 0; // Reset timer on resume
-        });
+        function handleFactNavigation(event, action) {
+            event.preventDefault();
+            if (action === 'prev') {
+                factIndex = (factIndex - 1 + dnaFacts.length) % dnaFacts.length;
+                updateFact();
+                factTimer = 0;
+            } else if (action === 'next') {
+                factIndex = (factIndex + 1) % dnaFacts.length;
+                updateFact();
+                factTimer = 0;
+            } else if (action === 'pause') {
+                isFactPaused = !isFactPaused;
+                pauseFactButton.classList.toggle('active', isFactPaused);
+                pauseFactButton.textContent = isFactPaused ? 'Resume' : 'Pause';
+                if (!isFactPaused) factTimer = 0;
+            }
+        }
+        prevFactButton.addEventListener('click', () => handleFactNavigation(event, 'prev'));
+        nextFactButton.addEventListener('click', () => handleFactNavigation(event, 'next'));
+        pauseFactButton.addEventListener('click', () => handleFactNavigation(event, 'pause'));
 
         // Tour commentary
         const tourCommentary = [
@@ -585,7 +617,6 @@
             quizProgressBar.style.width = `${((index + 1) / quizQuestions.length) * 100}%`;
             questionStartTime = quizTimer;
 
-            // Add touch support for radio buttons
             const radioInputs = quizQuestionsDiv.querySelectorAll('input[type="radio"]');
             radioInputs.forEach(input => {
                 input.parentElement.addEventListener('touchstart', (e) => {
@@ -623,7 +654,8 @@
             radioInputs.forEach(input => input.disabled = true);
         }
 
-        function startQuiz() {
+        function startQuiz(event) {
+            event.preventDefault();
             quizScore = 0;
             quizTimer = 0;
             currentQuestionIndex = 0;
@@ -673,19 +705,19 @@
             });
             quizSummaryDiv.innerHTML = summaryHTML;
 
-            // Add event listener for submit score button
             const submitScoreButton = document.getElementById('submitScoreButton');
             submitScoreButton.addEventListener('click', submitScore);
             submitScoreButton.addEventListener('touchstart', submitScore, { passive: false });
         }
+
         function submitScoreToGameCenter(score, leaderboardId) {
             window.webkit?.messageHandlers.gridWarsHandler.postMessage({
                 action: "submitScore",
                 score: score,
                 leaderboardId: leaderboardId
             });
-        }  
-        
+        }
+
         function submitScore(event) {
             event.preventDefault();
             submitMessage.style.display = 'block';
@@ -694,12 +726,12 @@
 
             setTimeout(() => {
                 submitMessage.style.display = 'none';
-                // Mock leaderboard submission (no backend)
                 console.log(`Score ${quizScore}/12 submitted to leaderboard at ${quizTimerSpan.textContent}`);
             }, 2000);
         }
 
-        function closeQuiz() {
+        function closeQuiz(event) {
+            event.preventDefault();
             clearInterval(quizInterval);
             quizModal.style.display = 'none';
             quizQuestionsDiv.style.display = 'block';
@@ -711,32 +743,23 @@
         }
 
         const quizButton = document.getElementById('quizButton');
-        function handleQuiz(event) {
-            event.preventDefault();
-            startQuiz();
-        }
-        quizButton.addEventListener('click', handleQuiz);
-        quizButton.addEventListener('touchstart', handleQuiz, { passive: false });
+        quizButton.addEventListener('click', startQuiz);
+        quizButton.addEventListener('touchstart', startQuiz, { passive: false });
 
         document.querySelector('.closeQuiz').addEventListener('click', closeQuiz);
         document.querySelector('.closeQuiz').addEventListener('touchstart', closeQuiz, { passive: false });
 
-        nextQuestionButton.addEventListener('click', () => {
+        function handleNextQuestion(event) {
+            event.preventDefault();
             currentQuestionIndex++;
             if (currentQuestionIndex < quizQuestions.length) {
                 showQuestion(currentQuestionIndex);
             } else {
                 endQuiz();
             }
-        });
-        nextQuestionButton.addEventListener('touchstart', () => {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < quizQuestions.length) {
-                showQuestion(currentQuestionIndex);
-            } else {
-                endQuiz();
-            }
-        }, { passive: false });
+        }
+        nextQuestionButton.addEventListener('click', handleNextQuestion);
+        nextQuestionButton.addEventListener('touchstart', handleNextQuestion, { passive: false });
 
         // Generate DNA double helix
         function createDNAStrand() {
@@ -890,7 +913,7 @@
                     pairedBase = null;
                 }
                 originalCameraPosition.copy(camera.position);
-                targetCameraPosition.set(0, 0, 25); // Zoom out to show entire sequence
+                targetCameraPosition.set(0, 0, 25);
                 zoomProgress = 0;
                 controls.enabled = true;
                 isZoomingOut = true;
@@ -929,7 +952,7 @@
             } else {
                 document.getElementById('factsPanel').style.display = 'block';
                 document.getElementById('tourPanel').style.display = 'none';
-                isUnraveled = false; // Reform DNA on tour stop
+                isUnraveled = false;
                 unravelButton.textContent = 'Unravel DNA';
             }
         }
@@ -1000,7 +1023,6 @@
 
                 dna.rotation.y += 0.004;
 
-                // Throb effect for selected base pair
                 if (selectedBase && pairedBase) {
                     const throbScale = 1.5 + 0.2 * Math.sin(performance.now() * 0.005);
                     selectedBase.scale.set(throbScale, throbScale, throbScale);
@@ -1024,10 +1046,10 @@
                         unravelButton.textContent = 'Reform DNA';
                         tourIndex = 0;
                         updateTourCommentary();
-                    } else if (cycle >= Math.PI / 2 && cycle < Math.PI && tourIndex !== 1) {
+                    } else if (cycle < Math.PI && tourIndex !== 1) {
                         tourIndex = 1;
                         updateTourCommentary();
-                    } else if (cycle >= Math.PI && cycle < 3 * Math.PI / 2 && isUnraveled) {
+                    } else if (cycle < 3 * Math.PI / 2 && isUnraveled) {
                         isUnraveled = false;
                         unravelButton.textContent = 'Unravel DNA';
                         tourIndex = 2;
@@ -1078,9 +1100,8 @@
                     controls.update();
                 }
 
-                // Update fact progress bar
                 if (!isFactPaused && !isAutoTour) {
-                    factTimer += 16.67; // Approx. 60 FPS
+                    factTimer += 16.67;
                     if (factTimer >= factInterval) {
                         factIndex = (factIndex + 1) % dnaFacts.length;
                         updateFact();
